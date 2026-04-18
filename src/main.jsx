@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 import App from './App.jsx';
 
@@ -31,6 +33,8 @@ createRoot(document.getElementById('root')).render(
       persistOptions={{ persister, maxAge: CACHE_MAX_AGE }}
     >
       <App />
+      <Analytics />
+      <SpeedInsights />
     </PersistQueryClientProvider>
   </StrictMode>,
 );

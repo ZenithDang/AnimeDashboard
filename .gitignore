@@ -34,3 +34,4 @@ Thumbs.db
 *.local
 
 DataExploration.ipynb
+export_data.py
