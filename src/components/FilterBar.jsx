@@ -52,17 +52,10 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
 
   return (
     <header
-      className="sticky top-0 z-40 w-full"
+      className="w-full"
       style={{ background: 'var(--bg-base)', borderBottom: '0.5px solid var(--border)' }}
     >
       <div className="max-w-[1600px] mx-auto px-4 flex flex-wrap items-center gap-x-4 py-3">
-
-        {/* Logo — always visible */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="font-semibold text-sm tracking-wide" style={{ color: 'var(--accent-violet)' }}>
-            AnimePulse
-          </span>
-        </div>
 
         {/* Mobile toggle — hidden on desktop */}
         <button

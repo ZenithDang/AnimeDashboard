@@ -3,6 +3,10 @@
     {
       "source": "/anilist-gql",
       "destination": "https://graphql.anilist.co"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

@@ -10,6 +10,9 @@ import {
   buildMostWatchedTitles,
   aggregateCountByGenre,
   buildCountChartData,
+  computeGenreCooccurrence,
+  aggregateByStudioAndGenre,
+  buildStudioTableData,
 } from '../utils/transforms';
 
 /**
@@ -114,43 +117,6 @@ export function useGenreTrends(entries, seasonRange) {
     [countAggregated, seasonRange, selectedGenres],
   );
 
-  const studioData = useMemo(() => {
-    const map = {};
-    for (const entry of entries) {
-      if (!entry.score || !entry.studio) continue;
-      if (!map[entry.studio]) map[entry.studio] = { scores: [] };
-      map[entry.studio].scores.push(entry.score);
-    }
-    return Object.entries(map)
-      .map(([studio, { scores }]) => ({
-        studio,
-        avg:   parseFloat((scores.reduce((s, v) => s + v, 0) / scores.length).toFixed(2)),
-        count: scores.length,
-      }))
-      .filter((s) => s.count >= 2)
-      .sort((a, b) => b.avg - a.avg)
-      .slice(0, 15);
-  }, [entries]);
-
-  const studioPopularityData = useMemo(() => {
-    const map = {};
-    for (const entry of entries) {
-      if (!entry.members || !entry.studio) continue;
-      if (!map[entry.studio]) map[entry.studio] = { members: [], count: 0 };
-      map[entry.studio].members.push(entry.members);
-      map[entry.studio].count++;
-    }
-    return Object.entries(map)
-      .map(([studio, { members, count }]) => ({
-        studio,
-        avgMembers: Math.round(members.reduce((s, v) => s + v, 0) / members.length),
-        count,
-      }))
-      .filter((s) => s.count >= 2)
-      .sort((a, b) => b.avgMembers - a.avgMembers)
-      .slice(0, 15);
-  }, [entries]);
-
   const stats = useMemo(() => {
     const scored = entries.filter((e) => e.score);
     const genreCounts = {};
@@ -188,6 +154,21 @@ export function useGenreTrends(entries, seasonRange) {
     };
   }, [entries, seasonRange]);
 
+  const cooccurrence = useMemo(
+    () => computeGenreCooccurrence(entries, selectedGenres),
+    [entries, selectedGenres],
+  );
+
+  const studioGenreData = useMemo(
+    () => aggregateByStudioAndGenre(entries, selectedGenres),
+    [entries, selectedGenres],
+  );
+
+  const studioTableData = useMemo(
+    () => buildStudioTableData(entries, seasonRange),
+    [entries, seasonRange],
+  );
+
   return {
     aggregated,
     trendData,
@@ -195,13 +176,14 @@ export function useGenreTrends(entries, seasonRange) {
     viewershipMomentumData,
     countMomentumData,
     breakoutTitles,
-    studioData,
-    studioPopularityData,
     stats,
     viewershipAggregated,
     viewershipTrendData,
     mostWatchedTitles,
     countAggregated,
     countTrendData,
+    cooccurrence,
+    studioGenreData,
+    studioTableData,
   };
 }

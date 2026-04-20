@@ -1,12 +1,7 @@
 import { useState, useMemo, Fragment, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { seasonLabel } from '../utils/transforms';
-
-function formatMembers(n) {
-  if (!n) return '—';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { formatMembers } from '../utils/format';
 
 /** Opacity-based cell colour — accent colour scales from 12% to 85% opacity */
 function cellColour(t, mode) {
@@ -92,6 +87,7 @@ const HeatCell = memo(function HeatCell({ genre, season, year, data, mode, membe
 
 function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seasonRange, selectedGenres }) {
   const [mode, setMode] = useState('score');
+  const navigate = useNavigate();
 
   // Compute min/max across visible cells for relative members normalisation
   const membersBounds = useMemo(() => {
@@ -168,9 +164,9 @@ function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seaso
             }}
           >
             {[
-              { key: 'score',   label: 'Score'      },
-              { key: 'members', label: 'Popularity' },
-              { key: 'titles',  label: 'Titles'     },
+              { key: 'score',   label: 'Avg Score'   },
+              { key: 'members', label: 'Avg Members' },
+              { key: 'titles',  label: 'Title Count' },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -211,8 +207,9 @@ function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seaso
         {selectedGenres.map((genre) => (
           <Fragment key={genre}>
             <div
-              className="flex items-center text-xs truncate pr-2"
+              className="flex items-center text-xs truncate pr-2 cursor-pointer hover:underline"
               style={{ color: 'var(--text-secondary)' }}
+              onClick={() => navigate(`/genres/${genre}`)}
             >
               {genre}
             </div>

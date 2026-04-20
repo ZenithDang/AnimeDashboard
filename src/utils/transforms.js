@@ -209,6 +209,186 @@ export function buildCountChartData(countAggregated, seasons, selectedGenres) {
 }
 
 /**
+ * Compute a symmetric genre co-occurrence matrix across all provided entries.
+ * Returns { matrix, genreOrder, maxCount } where:
+ *   matrix[A][A].count = titles containing genre A (diagonal)
+ *   matrix[A][B].count = titles containing both A and B (off-diagonal, symmetric)
+ *   matrix[A][B].titles = up to 5 examples sorted by members desc
+ *   maxCount = highest off-diagonal count (for colour normalisation)
+ */
+export function computeGenreCooccurrence(entries, selectedGenres) {
+  if (!selectedGenres || selectedGenres.length < 2) {
+    return { matrix: {}, genreOrder: [], maxCount: 1 };
+  }
+
+  const genreSet = new Set(selectedGenres);
+  const genreOrder = [...selectedGenres];
+
+  // Initialise empty cells
+  const titlesMap = {};
+  for (const a of genreOrder) {
+    titlesMap[a] = {};
+    for (const b of genreOrder) {
+      titlesMap[a][b] = [];
+    }
+  }
+
+  for (const entry of entries) {
+    const hit = entry.genres.filter((g) => genreSet.has(g));
+    if (!hit.length) continue;
+
+    for (let i = 0; i < hit.length; i++) {
+      const a = hit[i];
+      // Diagonal — every entry that contains genre A
+      titlesMap[a][a].push(entry);
+      for (let j = i + 1; j < hit.length; j++) {
+        const b = hit[j];
+        titlesMap[a][b].push(entry);
+        titlesMap[b][a].push(entry);
+      }
+    }
+  }
+
+  // Build matrix with counts and capped example lists
+  const matrix = {};
+  let maxCount = 1;
+
+  for (const a of genreOrder) {
+    matrix[a] = {};
+    for (const b of genreOrder) {
+      const raw = titlesMap[a][b];
+      const sorted = [...raw].sort((x, y) => y.members - x.members);
+      const count = raw.length;
+      matrix[a][b] = { count, titles: sorted.slice(0, 5) };
+      if (a !== b && count > maxCount) maxCount = count;
+    }
+  }
+
+  return { matrix, genreOrder, maxCount };
+}
+
+/**
+ * Aggregate entries by studio and genre, returning the top 12 studios
+ * (by unique title count across selected genres) and a cell matrix.
+ * Returns: { studios: string[], matrix: { [studio]: { [genre]: Cell | null } } }
+ * Cell: { count, avgScore, avgMembers, titlesScore[], titlesPopularity[] }
+ */
+export function aggregateByStudioAndGenre(entries, selectedGenres) {
+  if (!selectedGenres?.length) return { studios: [], matrix: {} };
+
+  const genreSet = new Set(selectedGenres);
+  const raw = {}; // { [studio]: { [genre]: { scores[], members[], entries[] } } }
+  const studioIds = {}; // { [studio]: Set<id> } for unique-title ranking
+
+  for (const entry of entries) {
+    const studio = entry.studio;
+    if (!studio || studio === 'Unknown Studio') continue;
+
+    for (const genre of entry.genres) {
+      if (!genreSet.has(genre)) continue;
+
+      if (!raw[studio]) raw[studio] = {};
+      if (!raw[studio][genre]) raw[studio][genre] = { scores: [], members: [], entries: [] };
+
+      raw[studio][genre].entries.push(entry);
+      if (entry.score > 0)   raw[studio][genre].scores.push(entry.score);
+      if (entry.members > 0) raw[studio][genre].members.push(entry.members);
+
+      if (!studioIds[studio]) studioIds[studio] = new Set();
+      studioIds[studio].add(entry.id);
+    }
+  }
+
+  // Top 12 studios by unique title count
+  const studios = Object.entries(studioIds)
+    .sort((a, b) => b[1].size - a[1].size)
+    .slice(0, 12)
+    .map(([studio]) => studio);
+
+  const matrix = {};
+  for (const studio of studios) {
+    matrix[studio] = {};
+    for (const genre of selectedGenres) {
+      const cell = raw[studio]?.[genre];
+      if (!cell || cell.entries.length === 0) {
+        matrix[studio][genre] = null;
+        continue;
+      }
+      const avgScore   = cell.scores.length ? parseFloat((cell.scores.reduce((s, v) => s + v, 0) / cell.scores.length).toFixed(2)) : null;
+      const avgMembers = cell.members.length ? Math.round(cell.members.reduce((s, v) => s + v, 0) / cell.members.length) : null;
+      matrix[studio][genre] = {
+        count:            cell.entries.length,
+        avgScore,
+        avgMembers,
+        titlesScore:      [...cell.entries].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5),
+        titlesPopularity: [...cell.entries].sort((a, b) => b.members - a.members).slice(0, 5),
+      };
+    }
+  }
+
+  return { studios, matrix };
+}
+
+/**
+ * Build a comprehensive per-studio summary for the sortable studio table.
+ * Includes avgScore, avgMembers, titleCount, topGenre, and score trend direction.
+ * Trend compares avg score of the first half of seasonRange vs the second half.
+ * Returns all studios with 2+ titles, default-sorted by avgScore desc.
+ */
+export function buildStudioTableData(entries, seasonRange) {
+  const map = {};
+
+  for (const e of entries) {
+    if (!e.studio || e.studio === 'Unknown Studio') continue;
+    if (!map[e.studio]) map[e.studio] = { all: [], scores: [], members: [], genres: {}, seasonScores: {} };
+    const s = map[e.studio];
+    s.all.push(e);
+    if (e.score > 0)   s.scores.push(e.score);
+    if (e.members > 0) s.members.push(e.members);
+    for (const g of (e.genres || [])) s.genres[g] = (s.genres[g] || 0) + 1;
+    const key = `${e.season}-${e.year}`;
+    if (e.score > 0) {
+      if (!s.seasonScores[key]) s.seasonScores[key] = [];
+      s.seasonScores[key].push(e.score);
+    }
+  }
+
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+
+  const mid = Math.floor(seasonRange.length / 2);
+  const firstKeys  = new Set(seasonRange.slice(0, mid).map(({ season, year }) => `${season}-${year}`));
+  const secondKeys = new Set(seasonRange.slice(mid).map(({ season, year }) => `${season}-${year}`));
+
+  return Object.entries(map)
+    .filter(([, s]) => s.all.length >= 2)
+    .map(([studio, s]) => {
+      const topGenre = Object.entries(s.genres).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+      let trend = null;
+      if (seasonRange.length >= 4) {
+        const firstScores  = Object.entries(s.seasonScores).filter(([k]) => firstKeys.has(k)).flatMap(([, v]) => v);
+        const secondScores = Object.entries(s.seasonScores).filter(([k]) => secondKeys.has(k)).flatMap(([, v]) => v);
+        const fa = avg(firstScores);
+        const sa = avg(secondScores);
+        if (fa != null && sa != null) {
+          const delta = sa - fa;
+          trend = delta > 0.15 ? 'up' : delta < -0.15 ? 'down' : 'flat';
+        }
+      }
+
+      return {
+        studio,
+        titleCount: s.all.length,
+        avgScore:   s.scores.length  ? parseFloat(avg(s.scores).toFixed(2))  : null,
+        avgMembers: s.members.length ? Math.round(avg(s.members))             : null,
+        topGenre,
+        trend,
+      };
+    })
+    .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0));
+}
+
+/**
  * Top titles ranked by AniList popularity.
  */
 export function buildMostWatchedTitles(entries, limit = 10) {
@@ -249,4 +429,26 @@ export function buildBreakoutTitles(entries, aggregated) {
       return true;
     })
     .slice(0, 10);
+}
+
+
+export function computeBaselineByKey(entries) {
+  const scoreMap = {};
+  const membersMap = {};
+  for (const e of entries) {
+    const key = `${e.season}-${e.year}`;
+    if (e.score) {
+      if (!scoreMap[key]) scoreMap[key] = { sum: 0, count: 0 };
+      scoreMap[key].sum   += e.score;
+      scoreMap[key].count += 1;
+    }
+    if (e.members) {
+      if (!membersMap[key]) membersMap[key] = { sum: 0, count: 0 };
+      membersMap[key].sum   += e.members;
+      membersMap[key].count += 1;
+    }
+  }
+  const score   = Object.fromEntries(Object.entries(scoreMap).map(([k, { sum, count }]) => [k, parseFloat((sum / count).toFixed(2))]));
+  const members = Object.fromEntries(Object.entries(membersMap).map(([k, { sum, count }]) => [k, Math.round(sum / count)]));
+  return { score, members };
 }

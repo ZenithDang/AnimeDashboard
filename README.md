@@ -1,16 +1,56 @@
 # AnimePulse — Anime Release Trend Tracker
 
-A dashboard for exploring genre trends, viewership, breakout titles, and studio momentum across anime seasons. Data is sourced from the [AniList GraphQL API](https://anilist.co).
+A multi-page dashboard for exploring genre trends, viewership, breakout titles, and studio output across anime seasons. Data is sourced from the [AniList GraphQL API](https://anilist.co).
 
-## Features
+## Pages
 
-- **Genre Trends** — multi-line chart showing avg score, avg popularity, or title count per genre across seasons. Each mode includes a dashed **All Genres** baseline showing the all-anime average for that metric, making it easy to see whether a genre is outperforming or riding a broader trend. Hover a data point to see the top 3 titles for that genre/season.
-- **Genre Heatmap** — genre × season grid. Toggle between Score (violet), Popularity (teal), and Titles (orange) modes. Score uses a fixed 6.0–9.0 scale; Popularity and Titles scale relative to the current dataset, with the actual min/max values shown in the legend.
-- **Genre Momentum** — bar chart showing % change per genre from the first to the last season in the selected range, colour-coded rising/declining. Toggle between Score, Popularity, and Titles.
-- **Studio Momentum** — top studios ranked by average score or average popularity across all releases in the selected range (minimum 2 titles).
-- **Ranked Titles** — tabbed sidebar panel. *Breakout* lists titles that most outperformed their genre's average score; *Most Watched* lists titles by AniList popularity. Click any card to open the detail panel.
-- **Title Detail Panel** — slide-in drawer with cover image, score, popularity, genres, synopsis, and a Viewership Breakdown section. The breakdown fires a single AniList statistics request on open and renders a segmented Watching / Completed / On Hold / Dropped / Plan to Watch bar with a colour-coded legend.
-- **Summary Stat Tiles** — six tiles: Titles Tracked, Seasons Covered, Top Genre (by count), Avg Score, Most Watched Genre (by cumulative popularity), and Avg Popularity / Title.
+### Summary (`/`)
+
+- **Tab Teasers** — three navigation cards at the top of the page linking to Genres, Studios, and Discover. Each card shows a live mini data preview: momentum bars (rising/falling % by genre), a top-3 studio leaderboard by avg score, and a top-3 hidden gem list (score ≥ 7.5, below 50th-percentile in viewership). Hovering highlights the card border in its accent colour.
+- **Ranked Titles** — two-column layout showing the top 5 *Breakout* titles (most above their genre's avg score) and top 5 *Most Watched* titles (by AniList members) side by side. Each row includes a cover art thumbnail with rank overlay, score or member badge, genre pills (navigable to drill-down), and a delta or score secondary badge. Stacks to a single column on mobile.
+
+### Genres (`/genres`)
+
+- **Genre Trends** — multi-line chart showing avg score, avg members, or title count per genre across seasons. Each mode includes a dashed **All Genres** baseline. Toggle labels: **Avg Score / Avg Members / Title Count**. Toggle description updates with the active mode. Hover a data point to see the top 3 titles for that genre/season. Click a genre label to navigate to its drill-down page.
+- **Genre Heatmap** — genre × season grid. Toggle between **Avg Score** (violet), **Avg Members** (teal), and **Title Count** (orange) modes. Score uses a fixed 6.0–9.0 scale; Members and Title Count scale relative to the current dataset. Click a genre row header to navigate to its drill-down page.
+- **Genre Momentum** — bar chart showing % change per genre from the first to the last season in the selected range, colour-coded rising/declining. Toggle between **Avg Score**, **Avg Members**, and **Title Count**. Click a genre label on the Y-axis to navigate to its drill-down page.
+- **Genre Co-occurrence** — chord diagram showing how often genres appear together across all titles in the selected range. Arc size represents a genre's total title count; ribbon width represents the number of titles shared between two genres. Hover an arc to highlight a genre's connections; hover a ribbon to see the exact pair count. Click an arc to navigate to that genre's drill-down page.
+
+### Studios (`/studios`)
+
+- **Stat tiles** — Studios Tracked, Top by Score (clickable → studio drill-down), Top by Popularity (clickable → studio drill-down).
+- **All Studios table** — sortable by any column: Studio, Titles, Avg Score, Avg Members, Top Genre, Score Trend. Score Trend compares the first half vs second half of the selected season range (↑ / → / ↓). Click any row to navigate to the studio drill-down. Click a Top Genre pill to navigate to the genre drill-down.
+- **Studio × Genre Matrix** — heatmap with studios as rows and selected genres as columns. Shows the top studios by title count in selected genres. Toggle between **Avg Score** (violet, fixed 6–9 scale), **Avg Members** (teal, relative), and **Title Count** (orange, relative). Hover a cell to see the metric value and up to 3 example titles. Click a studio row header to navigate to its drill-down page.
+
+### Genre Drill-Down (`/genres/:genre`)
+
+Per-genre detail page navigable from any genre label across the app.
+
+- **Stat tiles** — Titles, Seasons, Avg Score, Avg Popularity, Best Season (by avg score).
+- **Trend Over Time** — line chart with **Avg Score / Avg Members / Title Count** mode toggle. Score and Avg Members modes both overlay a dashed All Genres baseline for comparison. Toggle description updates with the active mode.
+- **Score Distribution** — histogram of title score buckets for the genre.
+- **Ranked Titles sidebar** — Top Rated / Most Watched tabs, up to 8 titles each. Click any card to open the detail panel.
+
+### Studio Drill-Down (`/studios/:studio`)
+
+Per-studio detail page navigable from the Studios table and Studio × Genre Matrix row headers.
+
+- **Stat tiles** — Titles, Seasons, Avg Score, Avg Members, Top Genre (clickable → genre drill-down).
+- **Trend Over Time** — line chart with **Avg Score / Avg Members / Title Count** mode toggle. Score and Avg Members modes both overlay a dashed All Studios baseline for comparison. Toggle description updates with the active mode.
+- **Genre Breakdown** — horizontal bar chart of titles per genre; each bar is coloured by genre accent and the genre label is clickable → genre drill-down.
+- **Ranked Titles sidebar** — Top Rated / Most Watched tabs, up to 8 titles each.
+
+### Discover (`/discover`)
+
+Hidden gem finder — titles with high scores relative to their viewership.
+
+- **Score vs Popularity scatter plot** — log-scale X-axis (AniList members), Y-axis (score). Gem-zone quadrant is shaded; reference lines mark the active score threshold and member cutoff. Highlighted dots are coloured by primary genre and are clickable.
+- **Controls** — Min score threshold (7.0 / 7.5 / 8.0) and Max popularity band (Niche 25th pct / Hidden 50th pct / Underrated 75th pct).
+- **Gem grid** — top 10 gems ranked by a composite score (high rating + low popularity). Each card shows score, member count, season, genre pills (navigable), and a popularity deficit badge.
+
+## Title Detail Panel
+
+Slide-in drawer available from any title click across the app. Shows cover image, score, popularity, genres, synopsis, and a Viewership Breakdown section. The breakdown fires a single AniList statistics request on open and renders a segmented Watching / Completed / On Hold / Dropped / Plan to Watch bar with a colour-coded legend.
 
 ## Filters
 
@@ -27,8 +67,9 @@ All filter state persists across sessions via `localStorage` and is reflected in
 | Layer         | Choice                          |
 | ------------- | ------------------------------- |
 | Framework     | React 19 + Vite 8               |
+| Routing       | React Router DOM v6             |
 | Styling       | Tailwind CSS v4                 |
-| Charts        | Recharts                        |
+| Charts        | Recharts + D3 (chord diagram)   |
 | Data fetching | TanStack React Query v5         |
 | State         | Zustand v5 (with persistence)   |
 | API           | AniList GraphQL                 |
@@ -49,36 +90,56 @@ The layout is fully responsive. On mobile the filter controls collapse behind a 
 ```text
 src/
   api/
-    anilist.js            — AniList GraphQL client, season pagination (top-50 or full),
-                            per-title statistics fetch, response normaliser,
-                            and concurrency-limited request queue (max 3 in-flight)
+    anilist.js              — AniList GraphQL client, season pagination (top-50 or full),
+                              per-title statistics fetch, response normaliser,
+                              and concurrency-limited request queue (max 3 in-flight)
   components/
-    FilterBar.jsx         — season range, current season toggle, Top 50/All titles toggle,
-                            genre multi-select, format filter; collapses to a toggle on mobile
-    GenreTrendChart.jsx   — tabbed Score / Popularity / Titles line chart with All Genres baseline
-    ScoreHeatmap.jsx      — tabbed Score / Popularity / Titles genre × season heatmap
-    GenreMomentum.jsx     — % change bar chart (Score / Popularity / Titles)
-    StudioMomentum.jsx    — top studios by avg score or avg popularity
-    RankedTitlesPanel.jsx — tabbed Breakout / Most Watched title list
-    TitleDetailPanel.jsx  — slide-in detail drawer with completion funnel
-    StatTiles.jsx         — 6-tile summary (score + popularity stats)
-    SkeletonLoader.jsx    — loading skeletons and error banner
+    NavBar.jsx              — top navigation bar (Summary, Genres, Studios, Discover)
+    FilterBar.jsx           — season range, current season toggle, Top 50/All titles toggle,
+                              genre multi-select, format filter; collapses to a toggle on mobile
+    GenreTrendChart.jsx     — Avg Score / Avg Members / Title Count line chart with All Genres baseline
+    ScoreHeatmap.jsx        — Avg Score / Avg Members / Title Count genre × season heatmap
+    GenreMomentum.jsx       — % change bar chart (Avg Score / Avg Members / Title Count)
+    GenreChordDiagram.jsx   — D3 chord diagram of genre co-occurrence
+    StudioTable.jsx         — sortable all-studios table (Avg Score, Avg Members, Titles, Top Genre, Score Trend)
+    StudioGenreMatrix.jsx   — studio × genre heatmap (Avg Score / Avg Members / Title Count)
+    RankedTitlesPanel.jsx   — two-column Breakout / Most Watched title list (top 5 each, cover art thumbnails)
+    TitleDetailPanel.jsx    — slide-in detail drawer with completion funnel
+    SkeletonLoader.jsx      — loading skeletons and error banner
+  contexts/
+    GenreTrendsContext.jsx  — React context that exposes useGenreTrends data app-wide,
+                              preventing recomputation on page navigation
+  pages/
+    SummaryPage.jsx          — / route: tab teasers with mini previews, ranked titles (2-column)
+    GenresPage.jsx           — /genres route: genre trend, heatmap, momentum, chord diagram
+    StudiosPage.jsx          — /studios route: stat tiles, studio table, studio×genre matrix
+    DiscoverPage.jsx         — /discover route: hidden gem scatter plot + gem grid
+    GenreDrillDownPage.jsx   — /genres/:genre route: per-genre trend, distribution, ranked titles
+    StudioDrillDownPage.jsx  — /studios/:studio route: per-studio trend, genre breakdown, ranked titles
   hooks/
-    useSeasonData.js      — React Query hook for season fetching + format filter
-    useGenreTrends.js     — score, popularity, count, and baseline aggregation for all charts
-    useAnimeStatistics.js — on-demand per-title statistics for the detail panel
-    useGenres.js          — derives available genres from loaded entries
-    useDebounce.js        — debounces season range inputs
-    useUrlSync.js         — bidirectional sync between filter store and URL search params
+    useSeasonData.js         — React Query hook for season fetching + format filter
+    useGenreTrends.js        — score, popularity, count, co-occurrence, studio aggregation,
+                               and studio table data; called once in App.jsx
+                               and shared via GenreTrendsContext
+    useGenreDrillDown.js     — per-genre aggregation for the genre drill-down page
+    useStudioDrillDown.js    — per-studio aggregation for the studio drill-down page
+    useAnimeStatistics.js    — on-demand per-title statistics for the detail panel
+    useGenres.js             — derives available genres from loaded entries
+    useDebounce.js           — debounces season range inputs
+    useUrlSync.js            — bidirectional sync between filter store and URL search params
   store/
-    filterStore.js        — Zustand store with persistence (filter state, current season toggle,
-                            Top 50/All titles flag)
-    uiStore.js            — Zustand store with persistence (active tab per chart panel)
+    filterStore.js          — Zustand store with persistence (filter state, current season toggle,
+                              Top 50/All titles flag)
+    uiStore.js              — Zustand store with persistence (active mode per chart panel:
+                              chartMode, momentumMode)
   utils/
-    transforms.js         — API normalisation, score / popularity / count aggregation,
-                            chart data builders, HTML entity decoder
-    colours.js            — genre → accent colour mapping
-    requestQueue.js       — concurrency limiter for AniList API requests
+    transforms.js           — API normalisation, score / popularity / count aggregation,
+                              genre co-occurrence matrix, studio×genre aggregation,
+                              studio table data, per-season baseline computation,
+                              chart data builders, HTML entity decoder
+    colours.js              — genre → accent colour mapping
+    format.js               — shared formatMembers utility (K/M number formatting)
+    requestQueue.js         — concurrency limiter for AniList API requests
 ```
 
 ## API Notes

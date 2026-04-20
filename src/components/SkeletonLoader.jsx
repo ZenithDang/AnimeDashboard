@@ -104,27 +104,6 @@ export function CardSkeleton() {
   );
 }
 
-export function StatTilesSkeleton() {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="p-3"
-          style={{
-            background: 'var(--bg-card)',
-            border: '0.5px solid var(--border)',
-            borderRadius: '12px',
-          }}
-        >
-          <SkeletonBlock height={10} width={60} className="mb-2" />
-          <SkeletonBlock height={24} width={80} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function ErrorBanner({ message, onRetry }) {
   return (
     <div
@@ -136,7 +115,7 @@ export function ErrorBanner({ message, onRetry }) {
         color: 'var(--accent-rose)',
       }}
     >
-      <span>⚠ {message || 'Failed to load data from Jikan API.'}</span>
+      <span>⚠ {message || 'Failed to load data from Anilist API.'}</span>
       {onRetry && (
         <button
           onClick={onRetry}

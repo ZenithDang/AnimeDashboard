@@ -2,13 +2,7 @@ import { useEffect } from 'react';
 import { getGenreColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { useAnimeStatistics } from '../hooks/useAnimeStatistics';
-
-function formatMembers(n) {
-  if (!n) return '0';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { formatMembers } from '../utils/format';
 
 const FUNNEL_SEGMENTS = [
   { key: 'watching',      label: 'Watching',      colour: '#60a5fa' },

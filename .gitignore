@@ -35,3 +35,7 @@ Thumbs.db
 
 DataExploration.ipynb
 export_data.py
+
+# Python export script outputs
+*.csv
+anime_checkpoint.json

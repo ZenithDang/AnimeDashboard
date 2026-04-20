@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
@@ -32,7 +33,9 @@ createRoot(document.getElementById('root')).render(
       client={queryClient}
       persistOptions={{ persister, maxAge: CACHE_MAX_AGE }}
     >
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
       <Analytics />
       <SpeedInsights />
     </PersistQueryClientProvider>
