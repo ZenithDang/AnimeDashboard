@@ -10,11 +10,9 @@ const useUiStore = create(
     (set) => ({
       chartMode:    'score',   // GenreTrendChart: 'score' | 'members' | 'titles'
       momentumMode: 'score',   // GenreMomentum:   'score' | 'members' | 'titles'
-      studioMode:   'score',   // StudioMomentum:  'score' | 'members'
 
       setChartMode:    (mode) => set({ chartMode: mode }),
       setMomentumMode: (mode) => set({ momentumMode: mode }),
-      setStudioMode:   (mode) => set({ studioMode: mode }),
     }),
     { name: 'animepulse-ui-v1' }
   )

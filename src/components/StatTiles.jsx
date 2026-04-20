@@ -1,12 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-function formatMembers(n) {
-  if (!n) return '—';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { formatMembers } from '../utils/format';
 
 function StatTiles({ stats }) {
   const navigate = useNavigate();

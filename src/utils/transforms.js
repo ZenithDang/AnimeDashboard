@@ -330,6 +330,87 @@ export function aggregateByStudioAndGenre(entries, selectedGenres) {
 }
 
 /**
+ * Build a comprehensive per-studio summary for the sortable studio table.
+ * Includes avgScore, avgMembers, titleCount, topGenre, and score trend direction.
+ * Trend compares avg score of the first half of seasonRange vs the second half.
+ * Returns all studios with 2+ titles, default-sorted by avgScore desc.
+ */
+export function buildStudioTableData(entries, seasonRange) {
+  const map = {};
+
+  for (const e of entries) {
+    if (!e.studio || e.studio === 'Unknown Studio') continue;
+    if (!map[e.studio]) map[e.studio] = { all: [], scores: [], members: [], genres: {}, seasonScores: {} };
+    const s = map[e.studio];
+    s.all.push(e);
+    if (e.score > 0)   s.scores.push(e.score);
+    if (e.members > 0) s.members.push(e.members);
+    for (const g of (e.genres || [])) s.genres[g] = (s.genres[g] || 0) + 1;
+    const key = `${e.season}-${e.year}`;
+    if (e.score > 0) {
+      if (!s.seasonScores[key]) s.seasonScores[key] = [];
+      s.seasonScores[key].push(e.score);
+    }
+  }
+
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+
+  const mid = Math.floor(seasonRange.length / 2);
+  const firstKeys  = new Set(seasonRange.slice(0, mid).map(({ season, year }) => `${season}-${year}`));
+  const secondKeys = new Set(seasonRange.slice(mid).map(({ season, year }) => `${season}-${year}`));
+
+  return Object.entries(map)
+    .filter(([, s]) => s.all.length >= 2)
+    .map(([studio, s]) => {
+      const topGenre = Object.entries(s.genres).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+      let trend = null;
+      if (seasonRange.length >= 4) {
+        const firstScores  = Object.entries(s.seasonScores).filter(([k]) => firstKeys.has(k)).flatMap(([, v]) => v);
+        const secondScores = Object.entries(s.seasonScores).filter(([k]) => secondKeys.has(k)).flatMap(([, v]) => v);
+        const fa = avg(firstScores);
+        const sa = avg(secondScores);
+        if (fa != null && sa != null) {
+          const delta = sa - fa;
+          trend = delta > 0.15 ? 'up' : delta < -0.15 ? 'down' : 'flat';
+        }
+      }
+
+      return {
+        studio,
+        titleCount: s.all.length,
+        avgScore:   s.scores.length  ? parseFloat(avg(s.scores).toFixed(2))  : null,
+        avgMembers: s.members.length ? Math.round(avg(s.members))             : null,
+        topGenre,
+        trend,
+      };
+    })
+    .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0));
+}
+
+/**
+ * Build per-season highlights: top-scored and most-watched title for each season.
+ * Returns one entry per season in seasonRange order, omitting seasons with no data.
+ */
+export function buildSeasonHighlights(entries, seasonRange) {
+  const bySeason = {};
+  for (const e of entries) {
+    const key = `${e.season}-${e.year}`;
+    if (!bySeason[key]) bySeason[key] = [];
+    bySeason[key].push(e);
+  }
+  return seasonRange
+    .map(({ season, year }) => {
+      const key  = `${season}-${year}`;
+      const pool = bySeason[key] ?? [];
+      const topScored    = [...pool].filter((e) => e.score > 0).sort((a, b) => b.score - a.score)[0] ?? null;
+      const mostWatched  = [...pool].filter((e) => e.members > 0).sort((a, b) => b.members - a.members)[0] ?? null;
+      return { key, label: seasonLabel(season, year), topScored, mostWatched };
+    })
+    .filter((s) => s.topScored || s.mostWatched);
+}
+
+/**
  * Top titles ranked by AniList popularity.
  */
 export function buildMostWatchedTitles(entries, limit = 10) {
@@ -370,4 +451,26 @@ export function buildBreakoutTitles(entries, aggregated) {
       return true;
     })
     .slice(0, 10);
+}
+
+
+export function computeBaselineByKey(entries) {
+  const scoreMap = {};
+  const membersMap = {};
+  for (const e of entries) {
+    const key = `${e.season}-${e.year}`;
+    if (e.score) {
+      if (!scoreMap[key]) scoreMap[key] = { sum: 0, count: 0 };
+      scoreMap[key].sum   += e.score;
+      scoreMap[key].count += 1;
+    }
+    if (e.members) {
+      if (!membersMap[key]) membersMap[key] = { sum: 0, count: 0 };
+      membersMap[key].sum   += e.members;
+      membersMap[key].count += 1;
+    }
+  }
+  const score   = Object.fromEntries(Object.entries(scoreMap).map(([k, { sum, count }]) => [k, parseFloat((sum / count).toFixed(2))]));
+  const members = Object.fromEntries(Object.entries(membersMap).map(([k, { sum, count }]) => [k, Math.round(sum / count)]));
+  return { score, members };
 }

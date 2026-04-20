@@ -7,13 +7,7 @@ import {
 import useFilterStore from '../store/filterStore';
 import useUiStore from '../store/uiStore';
 import { getGenreColour } from '../utils/colours';
-
-function formatMembers(n) {
-  if (!n) return '';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { formatMembers } from '../utils/format';
 
 function TrendTooltip({
   active, payload, label,
@@ -103,7 +97,7 @@ function TrendTooltip({
 function GenreTrendChart({
   trendData, aggregated,
   viewershipTrendData, viewershipAggregated,
-  countTrendData, countAggregated,
+  countTrendData,
   onTitleClick,
 }) {
   const { selectedGenres } = useFilterStore();
@@ -121,12 +115,11 @@ function GenreTrendChart({
         {...props}
         aggregated={aggregated}
         viewershipAggregated={viewershipAggregated}
-        countAggregated={countAggregated}
         mode={mode}
         onTitleClick={onTitleClick}
       />
     ),
-    [aggregated, viewershipAggregated, countAggregated, mode, onTitleClick],
+    [aggregated, viewershipAggregated, mode, onTitleClick],
   );
 
   const enterHandlers = useMemo(
@@ -167,9 +160,9 @@ function GenreTrendChart({
           }}
         >
           {[
-            { key: 'score',   label: 'Score' },
-            { key: 'members', label: 'Popularity' },
-            { key: 'titles',  label: 'Titles' },
+            { key: 'score',   label: 'Avg Score'   },
+            { key: 'members', label: 'Avg Members' },
+            { key: 'titles',  label: 'Title Count' },
           ].map(({ key, label }) => (
             <button
               key={key}

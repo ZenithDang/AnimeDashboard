@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUiStore from '../store/uiStore';
+import { formatMembers } from '../utils/format';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 
 function GenreTick({ x, y, payload }) {
@@ -23,11 +24,7 @@ function GenreTick({ x, y, payload }) {
 
 function formatValue(value, mode) {
   if (value == null) return '—';
-  if (mode === 'members') {
-    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-    if (value >= 1_000)     return `${Math.round(value / 1_000)}K`;
-    return String(value);
-  }
+  if (mode === 'members') return formatMembers(value);
   if (mode === 'titles') return `${value} title${value !== 1 ? 's' : ''}`;
   return value.toFixed(2);
 }
@@ -57,9 +54,9 @@ function MomentumTooltip({ active, payload, mode }) {
 }
 
 const MODES = [
-  { key: 'score',   label: 'Score'      },
-  { key: 'members', label: 'Popularity' },
-  { key: 'titles',  label: 'Titles'     },
+  { key: 'score',   label: 'Avg Score'   },
+  { key: 'members', label: 'Avg Members' },
+  { key: 'titles',  label: 'Title Count' },
 ];
 
 const SUBTITLES = {

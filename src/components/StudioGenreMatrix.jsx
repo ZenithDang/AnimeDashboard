@@ -1,11 +1,6 @@
 import { useState, useMemo, Fragment, memo } from 'react';
-
-function formatMembers(n) {
-  if (!n) return '—';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { useNavigate } from 'react-router-dom';
+import { formatMembers } from '../utils/format';
 
 function cellColour(t, mode) {
   const opacity = 0.12 + t * 0.73;
@@ -85,8 +80,9 @@ const StudioCell = memo(function StudioCell({ studio, genre, cell, mode, t }) {
   );
 });
 
-function StudioGenreMatrix({ studioGenreData, selectedGenres }) {
+function StudioGenreMatrix({ studioGenreData, selectedGenres, totalStudios }) {
   const [mode, setMode] = useState('score');
+  const navigate = useNavigate();
 
   const { studios, matrix } = studioGenreData ?? {};
 
@@ -149,9 +145,14 @@ function StudioGenreMatrix({ studioGenreData, selectedGenres }) {
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
-          Studio × Genre Matrix
-        </h2>
+        <div>
+          <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
+            Studio × Genre Matrix
+          </h2>
+          <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Top {studios.length}{totalStudios ? ` of ${totalStudios}` : ''} studios by title count in selected genres
+          </p>
+        </div>
 
         <div className="flex items-center gap-3">
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -173,9 +174,9 @@ function StudioGenreMatrix({ studioGenreData, selectedGenres }) {
             }}
           >
             {[
-              { key: 'score',   label: 'Score'      },
-              { key: 'members', label: 'Popularity' },
-              { key: 'titles',  label: 'Titles'     },
+              { key: 'score',   label: 'Avg Score'   },
+              { key: 'members', label: 'Avg Members' },
+              { key: 'titles',  label: 'Title Count' },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -217,8 +218,9 @@ function StudioGenreMatrix({ studioGenreData, selectedGenres }) {
           <Fragment key={studio}>
             <div
               className="flex items-center text-xs truncate pr-2"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}
               title={studio}
+              onClick={() => navigate(`/studios/${encodeURIComponent(studio)}`)}
             >
               {studio}
             </div>

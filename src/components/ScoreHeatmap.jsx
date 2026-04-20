@@ -1,13 +1,7 @@
 import { useState, useMemo, Fragment, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { seasonLabel } from '../utils/transforms';
-
-function formatMembers(n) {
-  if (!n) return '—';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+import { formatMembers } from '../utils/format';
 
 /** Opacity-based cell colour — accent colour scales from 12% to 85% opacity */
 function cellColour(t, mode) {
@@ -170,9 +164,9 @@ function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seaso
             }}
           >
             {[
-              { key: 'score',   label: 'Score'      },
-              { key: 'members', label: 'Popularity' },
-              { key: 'titles',  label: 'Titles'     },
+              { key: 'score',   label: 'Avg Score'   },
+              { key: 'members', label: 'Avg Members' },
+              { key: 'titles',  label: 'Title Count' },
             ].map(({ key, label }) => (
               <button
                 key={key}

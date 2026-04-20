@@ -7,19 +7,24 @@ import FilterBar        from './components/FilterBar';
 import TitleDetailPanel from './components/TitleDetailPanel';
 import { LoadingBar, ErrorBanner } from './components/SkeletonLoader';
 
-import { useSeasonData } from './hooks/useSeasonData';
-import { useUrlSync }    from './hooks/useUrlSync';
+import { useSeasonData }  from './hooks/useSeasonData';
+import { useGenreTrends } from './hooks/useGenreTrends';
+import { useUrlSync }     from './hooks/useUrlSync';
+import { GenreTrendsContext } from './contexts/GenreTrendsContext';
 
-import TrendsPage        from './pages/TrendsPage';
-import StudiosPage       from './pages/StudiosPage';
-import DiscoverPage      from './pages/DiscoverPage';
-import GenreDrillDownPage from './pages/GenreDrillDownPage';
+import SummaryPage         from './pages/SummaryPage';
+import GenresPage          from './pages/GenresPage';
+import StudiosPage         from './pages/StudiosPage';
+import DiscoverPage        from './pages/DiscoverPage';
+import GenreDrillDownPage  from './pages/GenreDrillDownPage';
+import StudioDrillDownPage from './pages/StudioDrillDownPage';
 
 export default function App() {
   useUrlSync();
 
   const queryClient = useQueryClient();
-  const { entries, isLoading, isError, errorDetail } = useSeasonData();
+  const { entries, isLoading, isError, errorDetail, seasonRange } = useSeasonData();
+  const genreTrendsData = useGenreTrends(entries, seasonRange);
 
   const [selectedTitle, setSelectedTitle] = useState(null);
 
@@ -56,12 +61,16 @@ export default function App() {
         </div>
       )}
 
-      <Routes>
-        <Route path="/"         element={<TrendsPage onTitleClick={handleTitleClick} />} />
-        <Route path="/studios"  element={<StudiosPage />} />
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/genres/:genre" element={<GenreDrillDownPage />} />
-      </Routes>
+      <GenreTrendsContext.Provider value={genreTrendsData}>
+        <Routes>
+          <Route path="/"          element={<SummaryPage  onTitleClick={handleTitleClick} />} />
+          <Route path="/genres"    element={<GenresPage   onTitleClick={handleTitleClick} />} />
+          <Route path="/studios"   element={<StudiosPage />} />
+          <Route path="/discover"  element={<DiscoverPage onTitleClick={handleTitleClick} />} />
+          <Route path="/genres/:genre"   element={<GenreDrillDownPage  onTitleClick={handleTitleClick} />} />
+          <Route path="/studios/:studio" element={<StudioDrillDownPage onTitleClick={handleTitleClick} />} />
+        </Routes>
+      </GenreTrendsContext.Provider>
 
       <TitleDetailPanel title={selectedTitle} onClose={handleClosePanel} />
 

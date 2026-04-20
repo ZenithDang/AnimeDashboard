@@ -136,7 +136,7 @@ export function ErrorBanner({ message, onRetry }) {
         color: 'var(--accent-rose)',
       }}
     >
-      <span>⚠ {message || 'Failed to load data from Jikan API.'}</span>
+      <span>⚠ {message || 'Failed to load data from Anilist API.'}</span>
       {onRetry && (
         <button
           onClick={onRetry}
