@@ -54,7 +54,7 @@ export function useStudioDrillDown(studio) {
   const genreData = useMemo(() => {
     const map = {};
     for (const e of studioEntries) {
-      for (const g of (e.genres || [])) {
+      for (const g of (e.genres || []).filter(Boolean)) {
         map[g] = (map[g] || 0) + 1;
       }
     }

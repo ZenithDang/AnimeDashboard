@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import useFilterStore, { SEASONS, getCurrentSeason, defaultStart, defaultEnd, DEFAULT_GENRES, DEFAULT_FORMAT } from '../store/filterStore';
 import { useGenres } from '../hooks/useGenres';
 
@@ -32,6 +33,9 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
     selectedGenres.length !== DEFAULT_GENRES.length ||
     selectedGenres.some((g) => !DEFAULT_GENRES.includes(g))
   );
+
+  const { pathname } = useLocation();
+  const onDrillDown = pathname.startsWith('/genres/') || pathname.startsWith('/studios/');
 
   const genres = useGenres(entries);
 
@@ -161,8 +165,8 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
             </button>
           </div>
 
-          {/* Genre Multi-Select */}
-          <div className="relative">
+          {/* Genre Multi-Select — hidden on drill-down detail pages */}
+          {!onDrillDown && <div className="relative">
             <button
               onClick={() => handleGenreOpen(!genreOpen)}
               className="flex items-center gap-1 px-3 py-1 text-xs transition-colors"
@@ -249,9 +253,10 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
-          {/* Selected genre pills */}
+          {/* Selected genre pills — hidden on drill-down detail pages */}
+          {!onDrillDown && (
           <div className="flex flex-wrap gap-1 flex-1 min-w-0">
             {selectedGenres.map((genre) => (
               <span
@@ -275,6 +280,7 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
               </span>
             ))}
           </div>
+          )}
 
           {/* Reset button — only shown when filters differ from defaults */}
           {isDirty && (

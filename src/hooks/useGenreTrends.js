@@ -75,9 +75,18 @@ export function useGenreTrends(entries, seasonRange) {
     [aggregated, seasonRange, selectedGenres],
   );
 
+  // Entries scoped to selected genres — used for title-level lists so they
+  // reflect the active filter. Aggregated baselines still use all entries.
+  const genreFilteredEntries = useMemo(
+    () => selectedGenres.length
+      ? entries.filter((e) => e.genres.some((g) => selectedGenres.includes(g)))
+      : entries,
+    [entries, selectedGenres],
+  );
+
   const breakoutTitles = useMemo(
-    () => buildBreakoutTitles(entries, aggregated),
-    [entries, aggregated],
+    () => buildBreakoutTitles(genreFilteredEntries, aggregated),
+    [genreFilteredEntries, aggregated],
   );
 
   const viewershipAggregated = useMemo(
@@ -97,8 +106,8 @@ export function useGenreTrends(entries, seasonRange) {
   );
 
   const mostWatchedTitles = useMemo(
-    () => buildMostWatchedTitles(entries),
-    [entries],
+    () => buildMostWatchedTitles(genreFilteredEntries),
+    [genreFilteredEntries],
   );
 
   const countAggregated = useMemo(

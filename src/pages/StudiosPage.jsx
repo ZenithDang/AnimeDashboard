@@ -6,14 +6,15 @@ import useFilterStore     from '../store/filterStore';
 import StudioTable        from '../components/StudioTable';
 import StudioGenreMatrix  from '../components/StudioGenreMatrix';
 import { ChartSkeleton }  from '../components/SkeletonLoader';
+import { buildStudioTableData } from '../utils/transforms';
 
 import { formatMembers } from '../utils/format';
 
 export default function StudiosPage() {
   const navigate = useNavigate();
-  const { entries, isLoading } = useSeasonData();
+  const { entries, isLoading, seasonRange } = useSeasonData();
   const { selectedGenres } = useFilterStore();
-  const { studioGenreData, studioTableData } = useGenreTrendsContext();
+  const { studioGenreData } = useGenreTrendsContext();
 
   const showSkeleton = isLoading && entries.length === 0;
 
@@ -25,10 +26,19 @@ export default function StudiosPage() {
     return seen.size;
   }, [entries]);
 
-  const topByScore      = studioTableData[0] ?? null;
+  // Recompute studio table data scoped to the selected genres so the table
+  // and stat tiles reflect the same genre filter as the matrix.
+  const filteredStudioTableData = useMemo(() => {
+    const genreFiltered = selectedGenres.length
+      ? entries.filter((e) => e.genres.some((g) => selectedGenres.includes(g)))
+      : entries;
+    return buildStudioTableData(genreFiltered, seasonRange);
+  }, [entries, seasonRange, selectedGenres]);
+
+  const topByScore      = filteredStudioTableData[0] ?? null;
   const topByPopularity = useMemo(
-    () => [...studioTableData].sort((a, b) => (b.avgMembers ?? 0) - (a.avgMembers ?? 0))[0] ?? null,
-    [studioTableData],
+    () => [...filteredStudioTableData].sort((a, b) => (b.avgMembers ?? 0) - (a.avgMembers ?? 0))[0] ?? null,
+    [filteredStudioTableData],
   );
 
   const statTiles = [
@@ -85,7 +95,7 @@ export default function StudiosPage() {
       {showSkeleton ? (
         <ChartSkeleton height={360} />
       ) : (
-        <StudioTable studioTableData={studioTableData} />
+        <StudioTable studioTableData={filteredStudioTableData} />
       )}
 
       {/* Studio × Genre matrix — secondary view for genre overlap */}

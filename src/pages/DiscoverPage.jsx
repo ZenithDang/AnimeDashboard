@@ -6,6 +6,7 @@ import {
   ReferenceLine, ReferenceArea,
 } from 'recharts';
 import { useSeasonData } from '../hooks/useSeasonData';
+import useFilterStore from '../store/filterStore';
 import { getGenreColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { formatMembers } from '../utils/format';
@@ -110,18 +111,25 @@ const OBSCURITY_PRESETS = [
 
 export default function DiscoverPage({ onTitleClick }) {
   const { entries, isLoading } = useSeasonData();
+  const { selectedGenres } = useFilterStore();
   const [minScore,   setMinScore]   = useState(7.5);
   const [popularity, setPopularity] = useState(50);
 
+  // Filter entries to only those matching at least one selected genre
+  const filteredEntries = useMemo(
+    () => entries.filter((e) => !selectedGenres.length || e.genres.some((g) => selectedGenres.includes(g))),
+    [entries, selectedGenres],
+  );
+
   // Percentile-based member cutoff for the "hidden" threshold
   const membersCutoff = useMemo(() => {
-    const sorted = entries
+    const sorted = filteredEntries
       .filter((e) => e.members > 0)
       .map((e) => e.members)
       .sort((a, b) => a - b);
     if (!sorted.length) return 0;
     return sorted[Math.min(Math.floor(sorted.length * (popularity / 100)), sorted.length - 1)];
-  }, [entries, popularity]);
+  }, [filteredEntries, popularity]);
 
   // Log-transform helpers — applied to X so Recharts plots on a pseudo-log scale
   const toLog  = (v) => Math.log10(Math.max(v, 1));
@@ -129,14 +137,14 @@ export default function DiscoverPage({ onTitleClick }) {
 
   // X-axis log domain — start at actual data minimum, cap at 97th percentile
   const { xMinLog, xMaxLog } = useMemo(() => {
-    const vals = entries.filter((e) => e.members > 0).map((e) => e.members).sort((a, b) => a - b);
+    const vals = filteredEntries.filter((e) => e.members > 0).map((e) => e.members).sort((a, b) => a - b);
     if (!vals.length) return { xMinLog: 0, xMaxLog: toLog(500_000) };
     const cap = vals[Math.floor(vals.length * 0.97)] ?? 500_000;
     return { xMinLog: toLog(vals[0]), xMaxLog: toLog(cap) };
-  }, [entries]);
+  }, [filteredEntries]);
 
   const scatterData = useMemo(() =>
-    entries
+    filteredEntries
       .filter((e) => e.score > 0 && e.members > 0)
       .map((e) => ({
         x:      toLog(e.members),   // log-transformed for even axis distribution
@@ -149,13 +157,13 @@ export default function DiscoverPage({ onTitleClick }) {
         isGem:  e.score >= minScore && e.members <= membersCutoff,
         entry:  e,
       })),
-    [entries, minScore, membersCutoff],
+    [filteredEntries, minScore, membersCutoff],
   );
 
   const avgMembers = useMemo(() => {
-    const vals = entries.filter((e) => e.members > 0).map((e) => e.members);
+    const vals = filteredEntries.filter((e) => e.members > 0).map((e) => e.members);
     return vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : 0;
-  }, [entries]);
+  }, [filteredEntries]);
 
   const { gems, totalGemCount } = useMemo(() => {
     const qualifying = scatterData
@@ -186,7 +194,7 @@ export default function DiscoverPage({ onTitleClick }) {
     );
   }, [onTitleClick]);
 
-  const isEmpty = !isLoading && entries.length === 0;
+  const isEmpty = !isLoading && filteredEntries.length === 0;
 
   return (
     <main className="flex-1 w-full px-4 py-4 flex flex-col gap-4" style={{ maxWidth: '1600px', margin: '0 auto' }}>

@@ -321,7 +321,7 @@ export default function StudioDrillDownPage({ onTitleClick }) {
                 <h2 className="text-sm font-medium mb-4" style={{ color: 'var(--text-primary)', margin: 0 }}>
                   Genre Breakdown
                 </h2>
-                <ResponsiveContainer width="100%" height={Math.max(120, genreData.length * 28)} style={{ marginTop: '1rem' }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, genreData.length * 32)} style={{ marginTop: '1rem' }}>
                   <BarChart
                     layout="vertical"
                     data={genreData}
@@ -343,6 +343,7 @@ export default function StudioDrillDownPage({ onTitleClick }) {
                       axisLine={false}
                       tickLine={false}
                       width={90}
+                      interval={0}
                     />
                     <Tooltip content={<GenreBarTooltip />} wrapperStyle={{ zIndex: 30 }} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]} activeBar={{ fillOpacity: 1 }}>

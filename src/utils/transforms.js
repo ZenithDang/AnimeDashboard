@@ -9,7 +9,7 @@ function decodeHtmlEntities(str) {
  * Normalise a raw AniList entry into the internal data model.
  */
 export function normaliseAnilistEntry(entry) {
-  const genres = entry.genres || [];
+  const genres = (entry.genres || []).filter(Boolean);
   const season = (entry.season || '').toLowerCase();
   const year   = entry.seasonYear || null;
 
