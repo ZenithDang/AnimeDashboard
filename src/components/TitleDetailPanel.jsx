@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import InfoTooltip from './InfoTooltip';
 import { getGenreColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { useAnimeStatistics } from '../hooks/useAnimeStatistics';
@@ -63,7 +64,7 @@ function CompletionFunnel({ titleId }) {
           const count = stats[key];
           if (!count) return null;
           return (
-            <div key={key} className="flex items-center gap-1.5 text-[10px]">
+            <div key={key} className="flex items-center gap-1.5 text-[11px]">
               <span
                 className="inline-block w-2 h-2 rounded-full flex-shrink-0"
                 style={{ background: colour }}
@@ -81,9 +82,37 @@ function CompletionFunnel({ titleId }) {
 }
 
 export default function TitleDetailPanel({ title, onClose }) {
+  const panelRef = useRef(null);
+
   useEffect(() => {
     if (!title) return;
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(panel.querySelectorAll(FOCUSABLE)).filter((el) => !el.disabled);
+
+    // Move focus into the panel on open
+    const focusable = getFocusable();
+    if (focusable.length) focusable[0].focus();
+
+    const handler = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+
+      const els = getFocusable();
+      if (!els.length) return;
+      const first = els[0];
+      const last  = els[els.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [title, onClose]);
@@ -99,18 +128,22 @@ export default function TitleDetailPanel({ title, onClose }) {
       {/* Dimmed overlay */}
       <div
         className="fixed inset-0 z-40"
-        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', animation: 'fadeIn 0.2s ease' }}
         onClick={onClose}
       />
 
       {/* Panel */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title.title}
         className="fixed top-0 right-0 bottom-0 z-50 flex flex-col"
         style={{
           width: 'min(400px, 100vw)',
           background: 'var(--bg-card)',
           borderLeft: '0.5px solid var(--border)',
-          animation: 'slideIn 0.2s ease-out',
+          animation: 'slideIn 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
           overflowY: 'auto',
         }}
       >
@@ -130,6 +163,7 @@ export default function TitleDetailPanel({ title, onClose }) {
           />
           <button
             onClick={onClose}
+            aria-label="Close panel"
             className="absolute top-3 right-3 flex items-center justify-center w-7 h-7 rounded-full transition-colors"
             style={{
               background: 'rgba(0,0,0,0.5)',
@@ -186,7 +220,7 @@ export default function TitleDetailPanel({ title, onClose }) {
                 <p className="text-xl font-bold" style={{ color: 'var(--accent-violet)' }}>
                   {title.score.toFixed(2)}
                 </p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>AniList Score</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>AniList Score</p>
               </div>
             )}
             {title.members > 0 && (
@@ -197,7 +231,10 @@ export default function TitleDetailPanel({ title, onClose }) {
                 <p className="text-xl font-bold" style={{ color: 'var(--accent-teal)' }}>
                   {formatMembers(title.members)}
                 </p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Popularity</p>
+                <p className="text-[11px] mt-0.5 flex items-center justify-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                  Popularity
+                  <InfoTooltip text="Number of AniList users who have this title in their list" />
+                </p>
               </div>
             )}
           </div>
@@ -227,7 +264,7 @@ export default function TitleDetailPanel({ title, onClose }) {
           {/* Synopsis */}
           <div>
             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Synopsis</p>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: '1.65' }}>
               {synopsis}
             </p>
           </div>
@@ -256,6 +293,10 @@ export default function TitleDetailPanel({ title, onClose }) {
         @keyframes slideIn {
           from { transform: translateX(100%); }
           to   { transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
     </>

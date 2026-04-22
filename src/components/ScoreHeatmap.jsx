@@ -2,6 +2,7 @@ import { useState, useMemo, Fragment, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { seasonLabel } from '../utils/transforms';
 import { formatMembers } from '../utils/format';
+import { getSeasonColour } from '../utils/colours';
 
 /** Opacity-based cell colour — accent colour scales from 12% to 85% opacity */
 function cellColour(t, mode) {
@@ -134,7 +135,7 @@ function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seaso
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
+        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-display)' }}>
           Genre Heatmap
         </h2>
 
@@ -196,8 +197,8 @@ function ScoreHeatmap({ aggregated, viewershipAggregated, countAggregated, seaso
         {seasonRange.map(({ season, year }) => (
           <div
             key={`${season}-${year}`}
-            className="text-center text-[10px]"
-            style={{ color: 'var(--text-muted)' }}
+            className="text-center text-[11px]"
+            style={{ color: getSeasonColour(season) }}
           >
             {seasonLabel(season, year)}
           </div>

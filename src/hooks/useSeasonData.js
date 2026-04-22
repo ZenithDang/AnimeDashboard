@@ -37,9 +37,11 @@ export function useSeasonData() {
   const isError     = seasonQueries.some((q) => q.isError);
   const errorDetail = seasonQueries.find((q) => q.isError)?.error?.message ?? null;
 
-  const allEntries = seasonQueries
-    .flatMap((q) => q.data || [])
-    .filter((entry) => matchesFormat(entry, format));
+  const allEntries = useMemo(
+    () => seasonQueries.flatMap((q) => q.data || []).filter((entry) => matchesFormat(entry, format)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [seasonQueries.map((q) => q.dataUpdatedAt).join(','), format],
+  );
 
   return { entries: allEntries, isLoading, isError, errorDetail, seasonRange };
 }

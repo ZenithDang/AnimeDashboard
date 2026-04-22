@@ -84,7 +84,7 @@ function GenreMomentum({ momentumData, viewershipMomentumData, countMomentumData
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
+        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-display)' }}>
           Genre Momentum
         </h2>
 

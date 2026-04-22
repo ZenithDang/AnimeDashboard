@@ -20,7 +20,7 @@ export default function NavBar() {
         <NavLink
           to="/"
           className="font-semibold text-sm tracking-wide flex-shrink-0"
-          style={{ color: 'var(--accent-violet)', textDecoration: 'none' }}
+          style={{ color: 'var(--accent-violet)', textDecoration: 'none', fontFamily: 'var(--font-display)', paddingBottom: '4px' }}
         >
           AnimePulse
         </NavLink>

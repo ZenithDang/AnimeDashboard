@@ -39,6 +39,17 @@ const FALLBACK_PALETTE = [
   '#f472b6', '#22d3ee', '#fbbf24', '#4ade80', '#818cf8',
 ];
 
+const SEASON_COLOURS = {
+  winter: '#93c5fd',
+  spring: '#f9a8d4',
+  summer: '#fbbf24',
+  fall:   '#f97316',
+};
+
+export function getSeasonColour(season) {
+  return SEASON_COLOURS[season?.toLowerCase()] ?? '#94a3b8';
+}
+
 export function getGenreColour(genre) {
   if (GENRE_COLOURS[genre]) return GENRE_COLOURS[genre];
   // Deterministic fallback based on name hash

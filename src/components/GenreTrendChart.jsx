@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import useFilterStore from '../store/filterStore';
 import useUiStore from '../store/uiStore';
+import InfoTooltip from './InfoTooltip';
 import { getGenreColour } from '../utils/colours';
 import { formatMembers } from '../utils/format';
 
@@ -141,7 +142,7 @@ function GenreTrendChart({
       onMouseLeave={clearHover}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
+        <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-display)' }}>
           Genre Trends
         </h2>
 
@@ -284,6 +285,7 @@ function GenreTrendChart({
             <span className="inline-block h-px w-0.5" style={{ background: 'rgba(255,255,255,0.4)' }} />
           </span>
           All Genres
+          <InfoTooltip text="The average across all anime in the dataset, not just your selected genres — use as a baseline for comparison" />
         </div>
       </div>
     </div>

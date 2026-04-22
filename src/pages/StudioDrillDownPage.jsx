@@ -4,10 +4,11 @@ import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
-import { getGenreColour } from '../utils/colours';
+import { getGenreColour, getSeasonColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { useStudioDrillDown } from '../hooks/useStudioDrillDown';
 import { ChartSkeleton } from '../components/SkeletonLoader';
+import EmptyState from '../components/EmptyState';
 import { formatMembers } from '../utils/format';
 
 function TrendTooltip({ active, payload, label, mode, studio }) {
@@ -72,7 +73,7 @@ function TitleCard({ title, idx, onTitleClick, metric }) {
     >
       <div className="flex items-start gap-2">
         <span
-          className="text-[10px] flex-shrink-0 pt-0.5"
+          className="text-[11px] flex-shrink-0 pt-0.5"
           style={{ color: 'var(--text-muted)', minWidth: '16px' }}
         >
           #{idx + 1}
@@ -93,8 +94,8 @@ function TitleCard({ title, idx, onTitleClick, metric }) {
               {metric === 'score' ? title.score?.toFixed(1) : formatMembers(title.members)}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>
-            <span className="flex-shrink-0">{seasonLabel(title.season, title.year)}</span>
+          <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            <span className="flex-shrink-0" style={{ color: getSeasonColour(title.season) }}>{seasonLabel(title.season, title.year)}</span>
           </div>
         </div>
       </div>
@@ -183,7 +184,7 @@ export default function StudioDrillDownPage({ onTitleClick }) {
               }}
               onClick={onClick}
             >
-              <span className="text-[10px] block mb-1" style={{ color: 'var(--text-muted)' }}>{label}</span>
+              <span className="text-[11px] block mb-1" style={{ color: 'var(--text-muted)' }}>{label}</span>
               <p className="text-lg font-semibold leading-none truncate" style={{ color: c }}>{value}</p>
             </div>
           ))}
@@ -192,14 +193,10 @@ export default function StudioDrillDownPage({ onTitleClick }) {
 
       {/* Empty state */}
       {isEmpty && (
-        <div
-          className="p-8 flex items-center justify-center"
-          style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border)', borderRadius: '12px' }}
-        >
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            No data for <strong style={{ color: 'var(--text-secondary)' }}>{studio}</strong> in the selected season range.
-          </p>
-        </div>
+        <EmptyState
+          heading={`No results for ${studio}`}
+          suggestion="Try widening the season range or adjusting your filters"
+        />
       )}
 
       {/* Body: two-column */}

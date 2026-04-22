@@ -68,6 +68,12 @@ export default function StudiosPage() {
   return (
     <main className="flex-1 w-full px-4 py-4 flex flex-col gap-4" style={{ maxWidth: '1600px', margin: '0 auto' }}>
 
+      {/* Page header */}
+      <div>
+        <h1 className="text-base font-semibold mb-0.5" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: 0 }}>Studios</h1>
+        <p className="text-xs" style={{ color: 'var(--text-muted)', margin: 0 }}>Compare studios by score, popularity, and genre output across the selected season range</p>
+      </div>
+
       {/* Stat tiles */}
       {!showSkeleton && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -83,9 +89,9 @@ export default function StudiosPage() {
               }}
               onClick={onClick ?? undefined}
             >
-              <span className="text-[10px] block mb-1" style={{ color: 'var(--text-muted)' }}>{label}</span>
+              <span className="text-[11px] block mb-1" style={{ color: 'var(--text-muted)' }}>{label}</span>
               <p className="text-base font-semibold leading-tight truncate" style={{ color: c }}>{value}</p>
-              {sub && <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
+              {sub && <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
             </div>
           ))}
         </div>

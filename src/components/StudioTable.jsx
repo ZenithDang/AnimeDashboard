@@ -2,6 +2,7 @@ import { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getGenreColour } from '../utils/colours';
 import { formatMembers } from '../utils/format';
+import InfoTooltip from './InfoTooltip';
 
 function TrendBadge({ trend }) {
   if (!trend) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
@@ -71,7 +72,7 @@ function StudioTable({ studioTableData }) {
         <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
           All Studios
         </h2>
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
           {studioTableData.length} studios · click a row to explore
         </span>
       </div>
@@ -96,7 +97,7 @@ function StudioTable({ studioTableData }) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {label} <SortIcon dir={sortKey === key ? sortDir : null} />
+                {label} {key === 'trend' && <InfoTooltip text="Compares the studio's avg score in the first half vs second half of the selected period. ↑ = improving" />} <SortIcon dir={sortKey === key ? sortDir : null} />
               </th>
             ))}
           </tr>
@@ -129,7 +130,7 @@ function StudioTable({ studioTableData }) {
                 {row.topGenre ? (
                   <span
                     onClick={(e) => { e.stopPropagation(); navigate(`/genres/${row.topGenre}`); }}
-                    className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    className="text-[11px] px-1.5 py-0.5 rounded-full"
                     style={{
                       background: `color-mix(in srgb, ${getGenreColour(row.topGenre)} 12%, transparent)`,
                       color: getGenreColour(row.topGenre),

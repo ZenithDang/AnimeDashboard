@@ -1,26 +1,33 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getGenreColour } from '../utils/colours';
+import { getGenreColour, getSeasonColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { formatMembers } from '../utils/format';
+import InfoTooltip from './InfoTooltip';
 
 function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
   const isHighlighted = highlightedId === title.id;
   const genreColour   = getGenreColour(title.comparedGenre || title.genres?.[0] || '');
   const isBreakout    = mode === 'breakout';
   const navigate      = useNavigate();
+  const [hovered, setHovered] = useState(false);
 
   const accentColour  = isBreakout ? 'rgba(167,139,250,' : 'rgba(244,114,182,';
 
   return (
     <button
       onClick={() => onTitleClick(title)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="w-full text-left p-2.5 transition-all"
       style={{
         background: isHighlighted ? `${accentColour}0.08)` : 'rgba(255,255,255,0.02)',
         border: `0.5px solid ${isHighlighted ? `${accentColour}0.35)` : 'var(--border)'}`,
         borderRadius: '8px',
         cursor: 'pointer',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
       }}
     >
       <div className="flex items-start gap-2.5">
@@ -84,7 +91,7 @@ function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+          <div className="flex flex-wrap items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
             <span>{title.studio}</span>
             <span>·</span>
             <span>{seasonLabel(title.season, title.year)}</span>
@@ -101,7 +108,7 @@ function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
               <button
                 key={genre}
                 onClick={(e) => { e.stopPropagation(); navigate(`/genres/${genre}`); }}
-                className="text-[10px] px-1.5 py-0.5 rounded-full"
+                className="text-[11px] px-1.5 py-0.5 rounded-full"
                 style={{
                   background: `color-mix(in srgb, ${getGenreColour(genre)} 12%, transparent)`,
                   color: getGenreColour(genre),
@@ -116,7 +123,7 @@ function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
             {/* Secondary badge */}
             {isBreakout && title.delta != null && (
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded-full ml-auto"
+                className="text-[11px] px-1.5 py-0.5 rounded-full ml-auto"
                 style={{
                   color: 'var(--accent-teal)',
                   background: 'rgba(52,211,153,0.1)',
@@ -128,7 +135,7 @@ function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
             )}
             {!isBreakout && title.score && (
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded-full ml-auto"
+                className="text-[11px] px-1.5 py-0.5 rounded-full ml-auto"
                 style={{
                   color: 'var(--accent-amber)',
                   background: 'rgba(251,191,36,0.1)',
@@ -145,12 +152,15 @@ function TitleRow({ title, idx, mode, highlightedId, onTitleClick }) {
   );
 }
 
-function RankedColumn({ label, subtitle, accentColour, titles, mode, highlightedId, onTitleClick }) {
+function RankedColumn({ label, subtitle, tooltip, accentColour, titles, mode, highlightedId, onTitleClick }) {
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-xs font-semibold" style={{ color: accentColour }}>{label}</span>
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</span>
+        <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: accentColour }}>
+          {label}
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </span>
+        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</span>
       </div>
       {titles.slice(0, 5).map((title, idx) => (
         <TitleRow
@@ -179,6 +189,7 @@ function RankedTitlesPanel({ breakoutTitles, mostWatchedTitles, highlightedId, o
           <RankedColumn
             label="Breakout"
             subtitle="Above genre avg"
+            tooltip="Titles scoring above their genre's average in the selected period"
             accentColour="var(--accent-violet)"
             titles={breakoutTitles}
             mode="breakout"

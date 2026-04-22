@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
 import NavBar           from './components/NavBar';
@@ -22,11 +22,25 @@ import StudioDrillDownPage from './pages/StudioDrillDownPage';
 export default function App() {
   useUrlSync();
 
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { entries, isLoading, isError, errorDetail, seasonRange } = useSeasonData();
   const genreTrendsData = useGenreTrends(entries, seasonRange);
 
   const [selectedTitle, setSelectedTitle] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll-to-top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  // Track scroll depth for header elevation
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleTitleClick = useCallback((title) => {
     setSelectedTitle(title);
@@ -47,7 +61,16 @@ export default function App() {
       <LoadingBar visible={isRefetching} />
 
       {/* Sticky header: NavBar + FilterBar */}
-      <div className="sticky top-0 z-40 w-full">
+      <div
+        className="sticky top-0 z-40 w-full"
+        style={{
+          background: 'rgba(15, 15, 26, 0.85)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.5)' : 'none',
+          transition: 'box-shadow 0.2s ease',
+        }}
+      >
         <NavBar />
         <FilterBar entries={entries} genresLoading={isLoading} />
       </div>

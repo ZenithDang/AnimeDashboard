@@ -34,11 +34,10 @@ export function LoadingBar({ visible }) {
 function SkeletonBlock({ height = 16, width = '100%', className = '' }) {
   return (
     <div
-      className={`rounded animate-pulse ${className}`}
+      className={`rounded skeleton-shimmer ${className}`}
       style={{
         height,
         width,
-        background: 'rgba(255,255,255,0.06)',
       }}
     />
   );
@@ -62,10 +61,9 @@ export function ChartSkeleton({ height = 300 }) {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 rounded-t animate-pulse"
+            className="flex-1 rounded-t skeleton-shimmer"
             style={{
               height: `${40 + Math.sin(i) * 30 + 30}%`,
-              background: 'rgba(255,255,255,0.06)',
               animationDelay: `${i * 0.05}s`,
             }}
           />

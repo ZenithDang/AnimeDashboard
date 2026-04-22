@@ -149,7 +149,7 @@ function StudioGenreMatrix({ studioGenreData, selectedGenres, totalStudios }) {
           <h2 className="text-sm font-medium" style={{ color: 'var(--text-primary)', margin: 0 }}>
             Studio × Genre Matrix
           </h2>
-          <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Top {studios.length}{totalStudios ? ` of ${totalStudios}` : ''} studios by title count in selected genres
           </p>
         </div>
@@ -206,7 +206,7 @@ function StudioGenreMatrix({ studioGenreData, selectedGenres, totalStudios }) {
         {selectedGenres.map((genre) => (
           <div
             key={genre}
-            className="text-center text-[10px]"
+            className="text-center text-[11px]"
             style={{ color: 'var(--text-muted)' }}
           >
             {genre}

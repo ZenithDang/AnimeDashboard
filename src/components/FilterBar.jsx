@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import useFilterStore, { SEASONS, getCurrentSeason, defaultStart, defaultEnd, DEFAULT_GENRES, DEFAULT_FORMAT } from '../store/filterStore';
 import { useGenres } from '../hooks/useGenres';
+import { getSeasonColour } from '../utils/colours';
 
 const SEASON_LABELS  = { winter: 'Winter', spring: 'Spring', summer: 'Summer', fall: 'Fall' };
 const FORMAT_OPTIONS = ['TV', 'Movie', 'OVA', 'ONA'];
@@ -65,6 +66,8 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
         <button
           className="md:hidden ml-auto flex items-center gap-2 text-xs px-3 py-1.5"
           onClick={() => setFiltersOpen((o) => !o)}
+          aria-label="Toggle filters"
+          aria-expanded={filtersOpen}
           style={{
             borderRadius: '20px',
             border: `0.5px solid ${filtersOpen ? 'var(--accent-violet)' : 'var(--border)'}`,
@@ -75,7 +78,7 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
         >
           Filters
           <span
-            className="inline-flex items-center justify-center w-4 h-4 text-[10px] rounded-full"
+            className="inline-flex items-center justify-center w-4 h-4 text-[11px] rounded-full"
             style={{ background: 'var(--accent-violet)', color: '#fff' }}
           >
             {selectedGenres.length}
@@ -121,9 +124,9 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
               className="px-2.5 py-1 text-xs transition-colors"
               style={{
                 borderRadius: '20px',
-                border: `0.5px solid ${includeCurrentSeason ? 'var(--accent-teal)' : 'var(--border)'}`,
-                background: includeCurrentSeason ? 'rgba(45,212,191,0.12)' : 'transparent',
-                color: includeCurrentSeason ? 'var(--accent-teal)' : 'var(--text-muted)',
+                border: `0.5px solid ${includeCurrentSeason ? getSeasonColour(currentSeason) : 'var(--border)'}`,
+                background: includeCurrentSeason ? `color-mix(in srgb, ${getSeasonColour(currentSeason)} 12%, transparent)` : 'transparent',
+                color: includeCurrentSeason ? getSeasonColour(currentSeason) : 'var(--text-muted)',
                 cursor: 'pointer',
               }}
             >
@@ -180,7 +183,7 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
             >
               Genres
               <span
-                className="inline-flex items-center justify-center w-4 h-4 text-[10px] rounded-full"
+                className="inline-flex items-center justify-center w-4 h-4 text-[11px] rounded-full"
                 style={{ background: 'var(--accent-violet)', color: '#fff' }}
               >
                 {selectedGenres.length}
@@ -272,6 +275,7 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
                 {genre}
                 <button
                   onClick={() => toggleGenre(genre)}
+                  aria-label={`Remove ${genre} filter`}
                   className="opacity-60 hover:opacity-100 transition-opacity"
                   style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0, color: 'inherit' }}
                 >
@@ -298,8 +302,27 @@ export default function FilterBar({ entries = [], genresLoading = false }) {
               ↺ Reset
             </button>
           )}
+
+          {/* Title count badge */}
+          {entries.length > 0 && (
+            <span
+              className="text-xs flex-shrink-0"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {entries.length.toLocaleString()} titles
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Aria-live region for screen readers */}
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {entries.length > 0 ? `Showing ${entries.length} titles` : ''}
+      </span>
 
       {/* Backdrop for genre dropdown */}
       {genreOpen && (

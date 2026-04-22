@@ -7,9 +7,10 @@ import {
 } from 'recharts';
 import { useSeasonData } from '../hooks/useSeasonData';
 import useFilterStore from '../store/filterStore';
-import { getGenreColour } from '../utils/colours';
+import { getGenreColour, getSeasonColour } from '../utils/colours';
 import { seasonLabel } from '../utils/transforms';
 import { formatMembers } from '../utils/format';
+import EmptyState from '../components/EmptyState';
 
 function GemTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
@@ -39,19 +40,25 @@ function GemTooltip({ active, payload }) {
 
 function GemCard({ entry, idx, popularityDeficit, onTitleClick }) {
   const navigate = useNavigate();
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={() => onTitleClick?.(entry)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="w-full text-left p-2.5 transition-all"
       style={{
         background: 'rgba(255,255,255,0.02)',
         border: '0.5px solid var(--border)',
         borderRadius: '8px',
         cursor: 'pointer',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
       }}
     >
       <div className="flex items-start gap-2">
-        <span className="text-[10px] flex-shrink-0 pt-0.5" style={{ color: 'var(--text-muted)', minWidth: '16px' }}>
+        <span className="text-[11px] flex-shrink-0 pt-0.5" style={{ color: 'var(--text-muted)', minWidth: '16px' }}>
           #{idx + 1}
         </span>
         <div className="flex-1 min-w-0">
@@ -66,17 +73,17 @@ function GemCard({ entry, idx, popularityDeficit, onTitleClick }) {
               ★ {entry.score?.toFixed(1)}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+          <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
             <span>{formatMembers(entry.members)} members</span>
             <span>·</span>
-            <span className="flex-shrink-0">{seasonLabel(entry.season, entry.year)}</span>
+            <span className="flex-shrink-0" style={{ color: getSeasonColour(entry.season) }}>{seasonLabel(entry.season, entry.year)}</span>
           </div>
           <div className="flex flex-wrap items-center gap-1 mt-1">
             {(entry.genres || []).slice(0, 2).map((g) => (
               <button
                 key={g}
                 onClick={(e) => { e.stopPropagation(); navigate(`/genres/${g}`); }}
-                className="text-[10px] px-1.5 py-0.5 rounded-full"
+                className="text-[11px] px-1.5 py-0.5 rounded-full"
                 style={{
                   background: `color-mix(in srgb, ${getGenreColour(g)} 12%, transparent)`,
                   color: getGenreColour(g),
@@ -89,7 +96,7 @@ function GemCard({ entry, idx, popularityDeficit, onTitleClick }) {
             ))}
             {popularityDeficit > 0 && (
               <span
-                className="text-[10px] px-1.5 py-0.5 rounded-full ml-auto flex-shrink-0"
+                className="text-[11px] px-1.5 py-0.5 rounded-full ml-auto flex-shrink-0"
                 style={{ background: 'rgba(52,211,153,0.1)', color: 'var(--accent-teal)', border: '0.5px solid rgba(52,211,153,0.25)' }}
               >
                 {popularityDeficit}% below avg
@@ -239,7 +246,7 @@ export default function DiscoverPage({ onTitleClick }) {
         <div className="flex items-center gap-2">
           <div>
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Obscurity</span>
-            <span className="text-[10px] block" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+            <span className="text-[11px] block" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
               How unknown must a gem be?
             </span>
           </div>
@@ -275,12 +282,10 @@ export default function DiscoverPage({ onTitleClick }) {
 
       {/* Body */}
       {isEmpty ? (
-        <div
-          className="p-8 flex items-center justify-center"
-          style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border)', borderRadius: '12px' }}
-        >
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No data loaded yet.</p>
-        </div>
+        <EmptyState
+          heading="No hidden gems found"
+          suggestion="Try lowering the score threshold or adjusting the obscurity level"
+        />
       ) : (
         <>
           {/* Scatter chart — full width */}

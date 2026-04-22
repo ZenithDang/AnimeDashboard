@@ -37,6 +37,12 @@ export default function GenresPage({ onTitleClick }) {
   return (
     <main className="flex-1 w-full px-4 py-4 flex flex-col gap-4" style={{ maxWidth: '1600px', margin: '0 auto' }}>
 
+      {/* Page header */}
+      <div>
+        <h1 className="text-base font-semibold mb-0.5" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', margin: 0 }}>Genres</h1>
+        <p className="text-xs" style={{ color: 'var(--text-muted)', margin: 0 }}>Explore how genres trend in score, viewership, and momentum across seasons</p>
+      </div>
+
       {showSkeleton ? (
         <ChartSkeleton height={300} />
       ) : (
@@ -79,7 +85,10 @@ export default function GenresPage({ onTitleClick }) {
       {showSkeleton ? (
         <ChartSkeleton height={220} />
       ) : (
-        <GenreChordDiagram cooccurrence={cooccurrence} />
+        <>
+          <hr style={{ border: 'none', borderTop: '0.5px solid var(--border)', margin: 0 }} />
+          <GenreChordDiagram cooccurrence={cooccurrence} />
+        </>
       )}
 
     </main>

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import RankedTitlesPanel  from '../components/RankedTitlesPanel';
+import WelcomeBanner      from '../components/WelcomeBanner';
 import { CardSkeleton } from '../components/SkeletonLoader';
 
 import { useSeasonData }         from '../hooks/useSeasonData';
@@ -45,7 +46,7 @@ function StudioMiniPreview({ studioTableData }) {
           <span className="text-[9px] flex-shrink-0" style={{ color: 'var(--text-muted)', width: 12 }}>
             #{i + 1}
           </span>
-          <span className="text-[10px] flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
+          <span className="text-[11px] flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
             {s.studio}
           </span>
           <span
@@ -69,7 +70,7 @@ function DiscoverMiniPreview({ gems }) {
           <span className="text-[9px] flex-shrink-0" style={{ color: 'var(--text-muted)', width: 12 }}>
             #{i + 1}
           </span>
-          <span className="text-[10px] flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
+          <span className="text-[11px] flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
             {t.title}
           </span>
           <span
@@ -103,15 +104,15 @@ function TabTeaser({ to, icon, label, accentColour, headline, sub, preview }) {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
           <span style={{ color: accentColour, fontSize: 13 }}>{icon}</span>
-          <span className="text-[10px] font-medium" style={{ color: accentColour }}>{label}</span>
+          <span className="text-[11px] font-medium" style={{ color: accentColour }}>{label}</span>
         </div>
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>→</span>
+        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>→</span>
       </div>
       {preview}
       <p className="text-xs font-semibold leading-tight truncate mb-0.5" style={{ color: 'var(--text-primary)' }}>
         {headline}
       </p>
-      <p className="text-[10px] leading-tight line-clamp-2" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-[11px] leading-tight line-clamp-2" style={{ color: 'var(--text-muted)' }}>
         {sub}
       </p>
     </button>
@@ -150,6 +151,8 @@ export default function SummaryPage({ onTitleClick }) {
 
   return (
     <main className="flex-1 w-full px-4 py-4 flex flex-col gap-4" style={{ maxWidth: '1600px', margin: '0 auto' }}>
+
+      <WelcomeBanner />
 
       {/* Tab teasers with mini previews */}
       {!showSkeleton && stats && (
