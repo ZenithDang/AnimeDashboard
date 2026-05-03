@@ -1,4 +1,4 @@
-# AnimePulse — Anime Release Trend Tracker
+# AniSeasonr — Anime Season Trend Dashboard
 
 A multi-page dashboard for exploring genre trends, viewership, breakout titles, and studio output across anime seasons. Data is sourced from the [AniList GraphQL API](https://anilist.co).
 
@@ -47,6 +47,10 @@ Hidden gem finder — titles with high scores relative to their viewership.
 - **Score vs Popularity scatter plot** — log-scale X-axis (AniList members), Y-axis (score). Gem-zone quadrant is shaded; reference lines mark the active score threshold and member cutoff. Highlighted dots are coloured by primary genre and are clickable.
 - **Controls** — Min score threshold (7.0 / 7.5 / 8.0) and Max popularity band (Niche 25th pct / Hidden 50th pct / Underrated 75th pct).
 - **Gem grid** — top 10 gems ranked by a composite score (high rating + low popularity). Each card shows score, member count, season, genre pills (navigable), and a popularity deficit badge.
+
+### Privacy Policy (`/privacy`)
+
+GDPR-compliant privacy policy. Covers data controller contact details, browser localStorage usage, third-party data processors (Vercel infrastructure logs, Vercel Web Analytics, Vercel Speed Insights, AniList API), legal bases for processing, retention periods, international transfer safeguards (SCCs / EU–US DPF), and EU/UK data subject rights. Linked from the site footer.
 
 ## Title Detail Panel
 
@@ -116,6 +120,7 @@ src/
     DiscoverPage.jsx         — /discover route: hidden gem scatter plot + gem grid
     GenreDrillDownPage.jsx   — /genres/:genre route: per-genre trend, distribution, ranked titles
     StudioDrillDownPage.jsx  — /studios/:studio route: per-studio trend, genre breakdown, ranked titles
+    PrivacyPage.jsx          — /privacy route: GDPR-compliant privacy policy
   hooks/
     useSeasonData.js         — React Query hook for season fetching + format filter
     useGenreTrends.js        — score, popularity, count, co-occurrence, studio aggregation,
@@ -158,3 +163,8 @@ src/
 npm run build        # outputs to dist/
 npx vercel           # deploy to Vercel
 ```
+
+`vercel.json` configures two things:
+
+- **Proxy rewrite** — `/anilist-gql` → `https://graphql.anilist.co`, keeping the AniList origin same-origin in production (mirrors the Vite dev proxy).
+- **Security headers** — applied to all routes: a strict `Content-Security-Policy` (no `unsafe-inline`; all scripts, styles, and fonts are self-hosted; only the AniList image CDN is allowlisted externally), `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, and `frame-ancestors 'none'`.

@@ -150,21 +150,30 @@ export default function DiscoverPage({ onTitleClick }) {
     return { xMinLog: toLog(vals[0]), xMaxLog: toLog(cap) };
   }, [filteredEntries]);
 
-  const scatterData = useMemo(() =>
+  // Base scatter points: stable as long as the entry set doesn't change.
+  // isGem is applied in a second pass so score/popularity changes don't rebuild the whole dataset.
+  const baseScatterData = useMemo(() =>
     filteredEntries
       .filter((e) => e.score > 0 && e.members > 0)
       .map((e) => ({
-        x:      toLog(e.members),   // log-transformed for even axis distribution
-        xRaw:   e.members,          // used in tooltip display
+        x:      toLog(e.members),
+        xRaw:   e.members,
         y:      e.score,
         name:   e.title,
         studio: e.studio,
         season: seasonLabel(e.season, e.year),
         genre:  e.genres?.[0] || '',
-        isGem:  e.score >= minScore && e.members <= membersCutoff,
         entry:  e,
       })),
-    [filteredEntries, minScore, membersCutoff],
+    [filteredEntries],
+  );
+
+  const scatterData = useMemo(
+    () => baseScatterData.map((d) => ({
+      ...d,
+      isGem: d.entry.score >= minScore && d.entry.members <= membersCutoff,
+    })),
+    [baseScatterData, minScore, membersCutoff],
   );
 
   const avgMembers = useMemo(() => {

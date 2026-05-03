@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
 import NavBar           from './components/NavBar';
@@ -12,9 +12,10 @@ import { useGenreTrends } from './hooks/useGenreTrends';
 import { useUrlSync }     from './hooks/useUrlSync';
 import { GenreTrendsContext } from './contexts/GenreTrendsContext';
 
-import SummaryPage from './pages/SummaryPage';
-import GenresPage  from './pages/GenresPage';
-import StudiosPage from './pages/StudiosPage';
+import SummaryPage  from './pages/SummaryPage';
+import GenresPage   from './pages/GenresPage';
+import StudiosPage  from './pages/StudiosPage';
+import PrivacyPage  from './pages/PrivacyPage';
 
 const DiscoverPage        = lazy(() => import('./pages/DiscoverPage'));
 const GenreDrillDownPage  = lazy(() => import('./pages/GenreDrillDownPage'));
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="/discover"  element={<DiscoverPage onTitleClick={handleTitleClick} />} />
             <Route path="/genres/:genre"   element={<GenreDrillDownPage  onTitleClick={handleTitleClick} />} />
             <Route path="/studios/:studio" element={<StudioDrillDownPage onTitleClick={handleTitleClick} />} />
+            <Route path="/privacy"         element={<PrivacyPage />} />
           </Routes>
         </Suspense>
       </GenreTrendsContext.Provider>
@@ -101,18 +103,27 @@ export default function App() {
       <TitleDetailPanel title={selectedTitle} onClose={handleClosePanel} />
 
       <footer
-        className="w-full text-center py-3 text-xs mt-auto"
+        className="w-full text-center py-3 text-xs mt-auto flex items-center justify-center gap-4"
         style={{ color: 'var(--text-muted)', borderTop: '0.5px solid var(--border)' }}
       >
-        Data sourced from{' '}
-        <a
-          href="https://anilist.co"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--accent-violet)', textDecoration: 'underline' }}
+        <span>
+          Data sourced from{' '}
+          <a
+            href="https://anilist.co"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--accent-violet)', textDecoration: 'underline' }}
+          >
+            AniList
+          </a>
+        </span>
+        <span aria-hidden="true">·</span>
+        <Link
+          to="/privacy"
+          style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}
         >
-          AniList
-        </a>
+          Privacy Policy
+        </Link>
       </footer>
     </div>
   );

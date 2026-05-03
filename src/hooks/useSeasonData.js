@@ -37,10 +37,15 @@ export function useSeasonData() {
   const isError     = seasonQueries.some((q) => q.isError);
   const errorDetail = seasonQueries.find((q) => q.isError)?.error?.message ?? null;
 
+  // Derive a stable string from each query's last-updated timestamp.
+  // Listing the seasonQueries array itself would fire on every render since
+  // useQueries returns a new array reference each time.
+  const queriesUpdatedAt = seasonQueries.map((q) => q.dataUpdatedAt).join(',');
+
   const allEntries = useMemo(
     () => seasonQueries.flatMap((q) => q.data || []).filter((entry) => matchesFormat(entry, format)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [seasonQueries.map((q) => q.dataUpdatedAt).join(','), format],
+    [queriesUpdatedAt, format],
   );
 
   return { entries: allEntries, isLoading, isError, errorDetail, seasonRange };

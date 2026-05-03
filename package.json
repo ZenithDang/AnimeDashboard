@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10",
     "@tanstack/query-sync-storage-persister": "^5.99.0",
     "@tanstack/react-query": "^5.99.0",
     "@tanstack/react-query-persist-client": "^5.99.0",

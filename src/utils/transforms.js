@@ -1,8 +1,20 @@
+const HTML_ENTITIES = {
+  '&amp;':  '&',
+  '&lt;':   '<',
+  '&gt;':   '>',
+  '&quot;': '"',
+  '&apos;': "'",
+  '&#039;': "'",
+  '&nbsp;': ' ',
+};
+
 function decodeHtmlEntities(str) {
   if (!str) return '';
-  const el = document.createElement('textarea');
-  el.innerHTML = str;
-  return el.value;
+  return str.replace(/&(?:[a-z]{2,6}|#\d{1,6});/gi, (entity) => {
+    if (entity in HTML_ENTITIES) return HTML_ENTITIES[entity];
+    if (entity.startsWith('&#')) return String.fromCharCode(parseInt(entity.slice(2, -1), 10));
+    return entity;
+  });
 }
 
 /**
@@ -224,14 +236,8 @@ export function computeGenreCooccurrence(entries, selectedGenres) {
   const genreSet = new Set(selectedGenres);
   const genreOrder = [...selectedGenres];
 
-  // Initialise empty cells
+  // Lazily-initialised: only allocate arrays for genre pairs that actually co-occur.
   const titlesMap = {};
-  for (const a of genreOrder) {
-    titlesMap[a] = {};
-    for (const b of genreOrder) {
-      titlesMap[a][b] = [];
-    }
-  }
 
   for (const entry of entries) {
     const hit = entry.genres.filter((g) => genreSet.has(g));
@@ -239,10 +245,15 @@ export function computeGenreCooccurrence(entries, selectedGenres) {
 
     for (let i = 0; i < hit.length; i++) {
       const a = hit[i];
-      // Diagonal — every entry that contains genre A
+      if (!titlesMap[a])    titlesMap[a]    = {};
+      if (!titlesMap[a][a]) titlesMap[a][a] = [];
       titlesMap[a][a].push(entry);
+
       for (let j = i + 1; j < hit.length; j++) {
         const b = hit[j];
+        if (!titlesMap[a][b]) titlesMap[a][b] = [];
+        if (!titlesMap[b])    titlesMap[b]    = {};
+        if (!titlesMap[b][a]) titlesMap[b][a] = [];
         titlesMap[a][b].push(entry);
         titlesMap[b][a].push(entry);
       }
@@ -256,7 +267,7 @@ export function computeGenreCooccurrence(entries, selectedGenres) {
   for (const a of genreOrder) {
     matrix[a] = {};
     for (const b of genreOrder) {
-      const raw = titlesMap[a][b];
+      const raw = titlesMap[a]?.[b] ?? [];
       const sorted = [...raw].sort((x, y) => y.members - x.members);
       const count = raw.length;
       matrix[a][b] = { count, titles: sorted.slice(0, 5) };

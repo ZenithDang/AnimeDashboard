@@ -8,11 +8,17 @@ const VALID_FORMATS = ['TV', 'Movie', 'OVA', 'ONA'];
 // This rejects anything else (HTML, scripts, etc.) before it reaches the store.
 const VALID_GENRE = /^[A-Za-z\s-]{1,50}$/;
 
+const _now      = new Date();
+const _maxYear  = _now.getFullYear() + 1;
+const _minYear  = _now.getFullYear() - 10;
+
 function parseSeasonParam(param) {
   if (!param) return null;
   const match = param.match(/^(winter|spring|summer|fall)-(\d{4})$/);
   if (!match) return null;
-  return { season: match[1], year: parseInt(match[2], 10) };
+  const year = parseInt(match[2], 10);
+  if (year < _minYear || year > _maxYear) return null;
+  return { season: match[1], year };
 }
 
 function buildUrlParams(state) {

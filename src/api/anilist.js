@@ -59,7 +59,8 @@ async function graphqlFetch(query, variables, attempt = 1) {
     if (attempt >= MAX_ATTEMPTS) {
       throw new Error(`AniList rate limit exceeded after ${MAX_ATTEMPTS} attempts`);
     }
-    const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10);
+    const raw = parseInt(response.headers.get('Retry-After'), 10);
+    const retryAfter = isNaN(raw) ? 60 : raw;
     await new Promise((r) => setTimeout(r, retryAfter * 1000));
     return graphqlFetch(query, variables, attempt + 1);
   }
